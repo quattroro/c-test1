@@ -38,6 +38,7 @@ public class SkillTreePanel : MonoBehaviour
                 temp = GameObject.Instantiate<SkillSlot>(slotobj);
                 temp.transform.parent = slotobj.transform.parent;
                 temp.transform.position = new Vector3(slotobj.transform.position.x + (x * SkillSlotPos.x), slotobj.transform.position.y - (y * SkillSlotPos.y), 0);
+                temp.name = $"Slot({x},{y})";
                 skillslots.Add(temp);
             }
         }

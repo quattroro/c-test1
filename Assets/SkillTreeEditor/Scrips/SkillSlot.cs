@@ -18,18 +18,23 @@ public class SkillSlot : MonoBehaviour
         }
         set
         {
-            Color color = GetComponent<Image>().color;
-            if (value)
+            isactive = value;
+            
+            if (isactive)
             {
+                Color color = GetComponent<Image>().color;
                 color.a = 255f;
                 GetComponent<Image>().color = color;
+                //Debug.Log($"{name}불투명");
             }
             else
             {
+                Color color = GetComponent<Image>().color;
                 color.a = 10f;
                 GetComponent<Image>().color = color;
+                //Debug.Log($"{name}투명");
             }
-            isactive = value;
+            
         }
     }
 

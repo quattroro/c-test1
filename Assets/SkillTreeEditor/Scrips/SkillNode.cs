@@ -10,6 +10,23 @@ public class SkillNode:MonoBehaviour
     ,IPointerEnterHandler
     ,IPointerExitHandler
 {
+    //스킬 노드의 상태를 구분하는데 사용
+    public enum NodeState
+    {
+        NOMAL,//슬롯에 배치되지 않은 기본상태
+        CLICKED,//클릭된 상태
+        SETTING,//슬롯에 배치된 상태
+        CONNECTED,//연결관계설정까지 완료된 상태
+    }
+
+    private NodeState _state = NodeState.NOMAL;
+
+    public NodeState State
+    {
+        get;
+        set;
+    }
+
     [Header("스킬정보")]
     public string ClassName;
     public int SkillDamage;
@@ -68,9 +85,6 @@ public class SkillNode:MonoBehaviour
     {
         if (!PopUpShowed)
         {
-            //if (infopanel.gameObject.activeSelf == true)
-            //    infopanel.gameObject.SetActive(false);
-
             return;
         }
 
@@ -101,6 +115,9 @@ public class SkillNode:MonoBehaviour
     {
         if (IsClicked)
             return;
+        if (State == NodeState.CLICKED)
+            return;
+
         if (!CoroutineFlag)
             StartCoroutine(IShowPopUpCount());
     }
