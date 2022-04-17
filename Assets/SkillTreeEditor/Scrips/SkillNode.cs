@@ -18,13 +18,19 @@ public class SkillNode:MonoBehaviour
         SETTING,//슬롯에 배치된 상태
         CONNECTED,//연결관계설정까지 완료된 상태
     }
-
+    [SerializeField]
     private NodeState _state = NodeState.NOMAL;
 
     public NodeState State
     {
-        get;
-        set;
+        get
+        {
+            return _state;
+        }
+        set
+        {
+            _state = value;
+        }
     }
 
     [Header("스킬정보")]
@@ -40,6 +46,7 @@ public class SkillNode:MonoBehaviour
     [Header("연결정보")]
     public List<SkillNode> parentNode;
     public List<SkillNode> childNode;
+    public Vector2Int index = Vector2Int.zero;
 
     [Header("내부정보")]
     public bool IsClicked;
@@ -49,6 +56,21 @@ public class SkillNode:MonoBehaviour
     public bool mouseEnter = false;
     public bool PopUpShowed = false;
 
+    public List<RelationLine> relations = new List<RelationLine>();//현재 나한테 연결되어있는 관계라인들을 노드가 직접 가지고 있는다. (이후 노드를 삭제할때 라인들까지 한번에 삭제하기 위해)
+
+
+    public void DeleteNode()
+    {
+        if(relations.Count>0)
+        {
+            for(int i=0;i<relations.Count;i++)
+            {
+                relations[i].DeleteRelation();
+            }
+            relations.Clear();
+        }
+        GameObject.Destroy(this.gameObject);
+    }
 
     public void Init(string cName,string sName, int rank, int Damage, int rLevel, string Explain)
     {
@@ -64,9 +86,33 @@ public class SkillNode:MonoBehaviour
     }
 
     
-
+    //연결을 해주고 라인을 그려준다.
     public void SetRelation(SkillNode node)
     {
+        if (node.SkillRank == this.SkillRank)
+            return;
+        if(node.SkillRank<this.SkillRank)
+        {
+            //node.childNode.Add(this);
+            this.parentNode.Add(node);
+        }
+        else
+        {
+            this.childNode.Add(node);
+            //node.parentNode.Add(node);
+        }
+    }
+
+    public void DeleteRalation(SkillNode node)
+    {
+        if (node.SkillRank < this.SkillRank)//node -> parent
+        {
+            parentNode.Remove(node);
+        }
+        else
+        {
+            childNode.Remove(node);
+        }
 
     }
     

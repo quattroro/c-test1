@@ -1,0 +1,17 @@
+Amazon,SkillName,SkillRank,SkillDamage,RequireLevel,SkillExplain
+0,Jab,1,30,1,재벌린과 스피어를 이용하여 재빠르게 여러 번 공격
+1,Power-Strike,2,120,6,창의 기본 데미지에 라이트닝 데미지를 추가
+2,Poison-Javelin,2,30,6,재벌린에 독을 주입하여 던져진 재벌린이 날아가면서 독구름을 퍼뜨리게 한다.
+3,Impale,3,150,12,무기의 내구도를 희생시키는 대신 높은 데미지를 추가
+4,Lightning-Bolt,4,180,18,재벌린을 던질때 경로를 따라 번개를 발생시킨다.
+5,Charged-Strike,4,150,18,재벌린이 날아가면서 독구름을 퍼뜨린다.
+6,Fend,5,150,24,근처의 모든 적을 타격하는 기술
+7,Lightning-Strike,6,170,30,명중된 적에게 체인 라이트닝을 발사하는 찌르기 공격
+8,Lightning-Fury,6,200,30,엄청난 위력의 Lightning Bolt를 발사하여 명중된 적 주변으로 재차 라이트닝을 분산시켜 공격하는 기술
+
+
+Amazon_Relation,SkillName,Parent,Child,Index
+0,Jab,{},{Lightning-Bolt},{2,0}
+1,Lightning-Bolt,{Jab},{Lightning-Fury},{2,3}
+2,Lightning-Fury,{Lightning-Bolt},{},{2,5}
+

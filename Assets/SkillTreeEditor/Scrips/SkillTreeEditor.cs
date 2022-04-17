@@ -11,12 +11,14 @@ public class SkillTreeEditor : MonoBehaviour
         NORMAL,
         CREATELINE,
         DELETELINE,
-        DELETENODE
+        DELETENODE,
+        EMAX
     }
 
 
     [SerializeField]
     SkillNode SkillNodeObject;
+    [SerializeField]
     SkillSlot SkillSlotObject;
 
 
@@ -33,16 +35,33 @@ public class SkillTreeEditor : MonoBehaviour
     List<SkillNode> skillnodes = new List<SkillNode>();
     [SerializeField]
     List<SkillSlot> skillslots = null;
+    [SerializeField]
+    List<RelationLine> relationlines = new List<RelationLine>();
+    [SerializeField]
+    List<SkillNode> relationnode = new List<SkillNode>();
 
 
+
+    
+    public string classname;
 
 
     [Header("내부 데이터")]
     public GameObject Click_Copy_Obj = null;
     public bool Clicked = false;
+
+    public Button[] ControlBtns = null;
+
     public Button CreateMode_Btn = null;
-    public Button DeleteMode_Btn = null;
+    public Button DeleteLine_Btn = null;
+    public Button DeleteNode_Btn = null;
     public EDITMODE NowMode = EDITMODE.NORMAL;
+
+    public RelationLine lineobj = null;
+    public RelationLine templine = null;
+
+    public SkillTreePanel treepanel = null;
+
 
     public void temp()
     {
@@ -50,13 +69,28 @@ public class SkillTreeEditor : MonoBehaviour
     }
     private void Awake()
     {
-        SkillTreePanel skilltreepanel = GetComponentInChildren<SkillTreePanel>(); 
+        treepanel = GetComponentInChildren<SkillTreePanel>(); 
         SkillSlotObject = GetComponentInChildren<SkillSlot>();
-        skillslots = skilltreepanel.GetSkillSlotList;
-        nSkillSlot = skilltreepanel.nSkillSlot;
+        skillslots = treepanel.GetSkillSlotList;
+        nSkillSlot = treepanel.nSkillSlot;
 
-        CreateMode_Btn.onClick.AddListener(() => ChangeEditMode(EDITMODE.CREATELINE));
-        DeleteMode_Btn.onClick.AddListener(() => ChangeEditMode(EDITMODE.DELETELINE));
+        ControlBtns = new Button[(int)EDITMODE.EMAX];
+
+
+        for (EDITMODE i = EDITMODE.CREATELINE; i < EDITMODE.EMAX; i++)
+        {
+            ControlBtns[(int)i] = GameObject.Find($"{i.ToString()}").GetComponent<Button>();
+            //ControlBtns[(int)i].onClick.AddListener(() => ChangeEditMode(i));
+            //ControlBtns[(int)i].onClick.AddListener(delegate (EDITMODE i) { ChangeEditMode(i); });
+        }
+
+        ControlBtns[(int)EDITMODE.CREATELINE].onClick.AddListener(() => ChangeEditMode(EDITMODE.CREATELINE));
+        ControlBtns[(int)EDITMODE.DELETELINE].onClick.AddListener(() => ChangeEditMode(EDITMODE.DELETELINE));
+        ControlBtns[(int)EDITMODE.DELETENODE].onClick.AddListener(() => ChangeEditMode(EDITMODE.DELETENODE));
+
+        SkillNodeObject.gameObject.SetActive(false);
+
+         lineobj = Resources.Load<RelationLine>("Prefabs/RelationLine");
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -73,47 +107,44 @@ public class SkillTreeEditor : MonoBehaviour
     
     public void ChangeEditMode(EDITMODE mode)
     {
-        ColorBlock colorblock = DeleteMode_Btn.colors;
+        ColorBlock colorblock = ControlBtns[1].colors;
         if (mode == NowMode)
         {
             NowMode = EDITMODE.NORMAL;
 
             colorblock.normalColor = new Color32(255, 255, 255, 255);
             colorblock.selectedColor = new Color32(255, 255, 255, 255);
-            CreateMode_Btn.colors = colorblock;
 
-            //colorblock.normalColor = new Color32(255, 255, 255, 255);
-            //colorblock.selectedColor = new Color32(255, 255, 255, 255);
-            DeleteMode_Btn.colors = colorblock;
+
+            for (int i = 1; i < (int)EDITMODE.EMAX; i++)
+            {
+                ControlBtns[i].colors = colorblock;
+            }
         }
         else
         {
            
             NowMode = mode;
-            if (mode == EDITMODE.CREATELINE)
-            {
-                colorblock.selectedColor = new Color32(255, 255, 0, 255);
-                colorblock.normalColor = new Color32(255, 255, 0, 255);
-                CreateMode_Btn.colors = colorblock;
 
-                colorblock.selectedColor = new Color32(255, 255, 255, 255);
-                colorblock.normalColor = new Color32(255, 255, 255, 255);
-                DeleteMode_Btn.colors = colorblock;
-            }
-            else
+            for(int i=1;i<(int)EDITMODE.EMAX;i++)
             {
-                colorblock.selectedColor = new Color32(255, 255, 0, 255);
-                colorblock.normalColor = new Color32(255, 255, 0, 255);
-
-                DeleteMode_Btn.colors = colorblock;
-                colorblock.selectedColor = new Color32(255, 255, 255, 255);
-                colorblock.normalColor = new Color32(255, 255, 255, 255);
-                CreateMode_Btn.colors = colorblock;
+                if(i==(int)mode)
+                {
+                    colorblock.selectedColor = new Color32(255, 255, 0, 255);
+                    colorblock.normalColor = new Color32(255, 255, 0, 255);
+                    ControlBtns[i].colors = colorblock;
+                }
+                else
+                {
+                    colorblock.selectedColor = new Color32(255, 255, 255, 255);
+                    colorblock.normalColor = new Color32(255, 255, 255, 255);
+                    ControlBtns[i].colors = colorblock;
+                }
             }
-            
+
         }
 
-        Debug.Log($"{mode.ToString()}");
+        Debug.Log($"{NowMode.ToString()}");
     }
 
     public void On_Click_SkillList_Road()
@@ -121,14 +152,15 @@ public class SkillTreeEditor : MonoBehaviour
         int damage = 0;
         int level = 0;
         int rank = 0;
-        string classname = null;
+        //string classname = null;
         string skillname = null;
         string explain = null;
-        List<Dictionary<int, string>> datalist = FileOpenDialog.GetI.SkillListFileOpen(out classname);
+        List<Dictionary<int, string>> datalist = FileOpenDialog.OpenGetI.SkillListFileOpen(out classname);
         int x = 0;
         int y = 0;
+        SkillNodeObject.gameObject.SetActive(true);
 
-        for(int i=0;i<datalist.Count;i++)
+        for (int i=0;i<datalist.Count;i++)
         {
             int.TryParse(datalist[i][(int)EnumTypes.SkillInfoColums.SkillDamage], out damage);
             int.TryParse(datalist[i][(int)EnumTypes.SkillInfoColums.RequireLevel], out level);
@@ -156,12 +188,13 @@ public class SkillTreeEditor : MonoBehaviour
 
     public void On_Click_SkillTree_Road()
     {
-        FileOpenDialog.GetI.TreeFileOpen();
+        List<Dictionary<int, string>> datalist = FileOpenDialog.OpenGetI.TreeFileOpen(out classname);
     }
 
     public void On_Click_SkillTree_Save()
     {
-        FileSaveDialog.GetI.FileSave();
+        relationnode = treepanel.skillnodes;
+        FileSaveDialog.SaveGetI.FileSave(classname, relationnode);
     }
 
     public void HideSlot(int val)
@@ -188,7 +221,7 @@ public class SkillTreeEditor : MonoBehaviour
         List<RaycastResult> result = new List<RaycastResult>();
         gr.Raycast(ped, result);
         SkillNode skillnode;
-
+        GameObject temp = null;
 
 
         if(NowMode==EDITMODE.NORMAL)
@@ -197,13 +230,16 @@ public class SkillTreeEditor : MonoBehaviour
             {
                 if (a.gameObject.tag == "SkillNode")
                 {
-                    Click_Copy_Obj = GameObject.Instantiate(a.gameObject);
-                    skillnode = Click_Copy_Obj.GetComponent<SkillNode>();
+                    //temp = GameObject.Instantiate(a.gameObject);
+                    skillnode = a.gameObject.GetComponent<SkillNode>();
                     if (skillnode.State == SkillNode.NodeState.NOMAL)
                     {
+                        Click_Copy_Obj = GameObject.Instantiate(a.gameObject);
                         Click_Copy_Obj.transform.parent = this.transform;
-                        skillnode.IsClicked = true;
-                        skillnode.State = SkillNode.NodeState.CLICKED;
+                        Click_Copy_Obj.GetComponent<SkillNode>().IsClicked = true;
+                        Click_Copy_Obj.GetComponent<SkillNode>().State = SkillNode.NodeState.CLICKED;
+                        //skillnode.IsClicked = true;
+                        //skillnode.State = SkillNode.NodeState.CLICKED;
                     }
                     break;
                 }
@@ -220,26 +256,28 @@ public class SkillTreeEditor : MonoBehaviour
             {
                 if (a.gameObject.tag == "SkillNode")
                 {
-                    Click_Copy_Obj = GameObject.Instantiate(a.gameObject);
-                    skillnode = Click_Copy_Obj.GetComponent<SkillNode>();
-                    if (skillnode.State == SkillNode.NodeState.CONNECTED)//연결을 끊어준다.
+                    //temp = GameObject.Instantiate(a.gameObject);
+                    skillnode = a.gameObject.GetComponent<SkillNode>();
+                    if (skillnode.State == SkillNode.NodeState.SETTING|| skillnode.State == SkillNode.NodeState.CONNECTED)
                     {
-                        Click_Copy_Obj.transform.parent = this.transform;
-                        skillnode.IsClicked = true;
-                        skillnode.State = SkillNode.NodeState.CLICKED;
+                        templine = GameObject.Instantiate<RelationLine>(lineobj);
+                        templine.transform.parent = this.transform;
+                        //templine.SetPosition(0, skillnode.transform.position);
+                        templine.SetNode(skillnode);
+
                     }
                     break;
                 }
             }
         }
-        else if(NowMode == EDITMODE.DELETENODE)
-        {
+        //else if(NowMode == EDITMODE.DELETENODE)
+        //{
 
-        }
-        else if (NowMode == EDITMODE.DELETELINE)
-        {
+        //}
+        //else if (NowMode == EDITMODE.DELETELINE)
+        //{
 
-        }
+        //}
 
         Clicked = true;
     }
@@ -253,8 +291,10 @@ public class SkillTreeEditor : MonoBehaviour
         List<RaycastResult> result = new List<RaycastResult>();
         gr.Raycast(ped, result);
         bool flag = false;
+        SkillNode skillnode;
+        GameObject temp = null;
 
-        if(NowMode == EDITMODE.NORMAL)
+        if (NowMode == EDITMODE.NORMAL)
         {
             foreach (var a in result)
             {
@@ -262,12 +302,23 @@ public class SkillTreeEditor : MonoBehaviour
                 {
                     if (a.gameObject.GetComponent<SkillSlot>().SetNode == null)
                     {
-                        Click_Copy_Obj.transform.parent = a.gameObject.transform;
-                        Click_Copy_Obj.transform.localPosition = new Vector3(0, 0, 0);
-                        a.gameObject.GetComponent<SkillSlot>().SetNode = Click_Copy_Obj.GetComponent<SkillNode>();
-                        Click_Copy_Obj.GetComponent<SkillNode>().IsClicked = false;
-                        Click_Copy_Obj.GetComponent<SkillNode>().State = SkillNode.NodeState.SETTING;
-                        flag = true;
+                        if (a.gameObject.GetComponent<SkillSlot>().p_SlotActive == true)
+                        {
+                            if(Click_Copy_Obj!=null)
+                            {
+                                //Click_Copy_Obj.transform.parent = a.gameObject.transform;
+                                //Click_Copy_Obj.transform.localPosition = new Vector3(0, 0, 0);
+                                //a.gameObject.GetComponent<SkillSlot>().SetNode = Click_Copy_Obj.GetComponent<SkillNode>();
+
+                                treepanel.SetTreeNode(a.gameObject.GetComponent<SkillSlot>(), Click_Copy_Obj.GetComponent<SkillNode>());
+
+                                Click_Copy_Obj.GetComponent<SkillNode>().State = SkillNode.NodeState.SETTING;
+                                Click_Copy_Obj.GetComponent<SkillNode>().IsClicked = false;
+                                flag = true;
+                            }
+                            
+                        }
+                        
                     }
 
                 }
@@ -279,20 +330,59 @@ public class SkillTreeEditor : MonoBehaviour
             for (int y = 0; y < skillslots.Count; y++)
             {
                 skillslots[y].p_SlotActive = true;
-                //skillslots[y].gameObject.SetActive(true);
             }
         }
         else if (NowMode == EDITMODE.CREATELINE)
         {
-
+            foreach (var a in result)
+            {
+                if (a.gameObject.tag == "SkillNode")
+                {
+                    skillnode = a.gameObject.GetComponent<SkillNode>();
+                    if (skillnode.State == SkillNode.NodeState.SETTING)
+                    {
+                        flag = templine.SetNode(skillnode);
+                    }
+                    
+                }
+                break;
+            }
+            if (flag == false)
+            {
+                if(templine!=null)
+                    GameObject.Destroy(templine.gameObject);
+            }
+            templine = null;
         }
         else if (NowMode == EDITMODE.DELETENODE)
         {
+            foreach (var a in result)
+            {
+                if (a.gameObject.tag == "SkillNode")
+                {
+                    skillnode = a.gameObject.GetComponent<SkillNode>();
+                    if(skillnode.State == SkillNode.NodeState.SETTING || skillnode.State == SkillNode.NodeState.CONNECTED)//없어져야 할 정보들. 1. 에디터에서 들고있는 노드리스트, 2. 노드에 연결되어 있는 라인들, 3. 노드 자체
+                    {
+                        treepanel.DeleteTreeNode(skillnode);
+                        //skillnode.DeleteNode();
+
+                    }
+                }
+                break;
+            }
 
         }
         else if (NowMode == EDITMODE.DELETELINE)
         {
-
+            foreach (var a in result)
+            {
+                if (a.gameObject.tag == "RelationLine")
+                {
+                    RelationLine relation = a.gameObject.GetComponent<RelationLine>();
+                    relation.DeleteRelation();
+                }
+                break;
+            }
         }
 
 
@@ -323,11 +413,20 @@ public class SkillTreeEditor : MonoBehaviour
         }
         if(Clicked)
         {
-            if(Click_Copy_Obj!=null)
+            if(NowMode == EDITMODE.NORMAL)
             {
-                Click_Copy_Obj.transform.position = Input.mousePosition;
+                if (Click_Copy_Obj != null)
+                {
+                    Click_Copy_Obj.transform.position = Input.mousePosition;
+                }
             }
-            
+            else if(NowMode == EDITMODE.CREATELINE)
+            {
+                if(templine != null)//해당 모드에서 슬롯에 세팅된 노드를 누르면 라인을 생성해 줄꺼기 때문에 이렇게 판단
+                {
+                    templine.SetPosition(1, Input.mousePosition);
+                }
+            }
         }
     }
 }

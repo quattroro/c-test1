@@ -10,6 +10,7 @@ public class SkillSlot : MonoBehaviour
     [SerializeField]
     private bool isactive;
 
+    public Vector2Int index;
     public bool p_SlotActive
     {
         get
@@ -48,6 +49,7 @@ public class SkillSlot : MonoBehaviour
         set
         {
             _NowNode = value;
+            value.index = this.index;
         }
     }
 

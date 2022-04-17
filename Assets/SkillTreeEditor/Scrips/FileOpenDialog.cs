@@ -7,24 +7,25 @@ using System.IO;
 
 public class FileOpenDialog : MonoBehaviour
 {
-    private static FileOpenDialog _Instance = null;
-    public static FileOpenDialog GetI
+    private static FileOpenDialog _OPenInstance = null;
+    public List<string> originalstr = null; 
+    public static FileOpenDialog OpenGetI
     {
         get
         {
-            if (_Instance == null)
+            if (_OPenInstance == null)
             {
                 //_Instance 
                 //_Instance = this;
                 return null;
             }
-            return _Instance;
+            return _OPenInstance;
         }
     }
 
     private void Awake()
     {
-        _Instance = this;
+        _OPenInstance = this;
     }
 
     VistaOpenFileDialog OpenDialog;
@@ -45,6 +46,7 @@ public class FileOpenDialog : MonoBehaviour
     
     public List<Dictionary<int, string>> SkillListFileOpen(out string classname)
     {
+        originalstr.Clear();
         List<Dictionary<int, string>> data = new List<Dictionary<int, string>>();
         string FilePath = null;
         classname = null;
@@ -60,6 +62,8 @@ public class FileOpenDialog : MonoBehaviour
         {
             return null;
         }
+
+
         FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
        
         StreamReader sr = new StreamReader(fs);
@@ -67,6 +71,7 @@ public class FileOpenDialog : MonoBehaviour
         while(true)
         {
             string str = sr.ReadLine();
+            originalstr.Add(str);
             if (str == null)
             {
                 break;
@@ -75,7 +80,6 @@ public class FileOpenDialog : MonoBehaviour
             var tempstr = str.Split(',');
             int colums = (int)EnumTypes.SkillInfoColums.Colummax;
 
-            //List<string> columlist = new List<string>();
             Dictionary<int, string> columsdic = new Dictionary<int, string>();
             for (int i=1;i<=colums; i++)//enum에 정의된 범위를 넘어가는 데이터는 버려진다.
             {
@@ -83,9 +87,8 @@ public class FileOpenDialog : MonoBehaviour
                     columsdic.Add(i-1,tempstr[i]);
             }
 
-            //var Row = new Dictionary<int, List<string>>();
             int RowNum = 0;
-            //string classname;
+
             if(int.TryParse(tempstr[0], out RowNum))//첫번째가 숫자가 아니면 해당 행은 열제목 행이다.
             {
                 data.Add(columsdic);
@@ -96,16 +99,18 @@ public class FileOpenDialog : MonoBehaviour
             }
 
 
-            Debug.Log(str);
-
         }
         int a = 0;
         return data; 
     }
 
-    public string TreeFileOpen()
+    //스킬정보와 스킬트리정보를 받아온다.
+    public List<Dictionary<int, string>> TreeFileOpen(out string classname)
     {
+        originalstr.Clear();
+        List<Dictionary<int, string>> data = new List<Dictionary<int, string>>();
         string FilePath = null;
+        classname = null;
         if (OpenDialog.ShowDialog() == DialogResult.OK)
         {
             if ((openStream = OpenDialog.OpenFile()) != null)
@@ -118,40 +123,85 @@ public class FileOpenDialog : MonoBehaviour
         {
             return null;
         }
+
+
         FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
 
         StreamReader sr = new StreamReader(fs);
-        // str;
+
         while (true)
         {
             string str = sr.ReadLine();
-            if (str == null)
+            originalstr.Add(str);
+            if (str == null || str.Length == 0)
             {
                 break;
             }
-            Debug.Log(str);
+            char[] temp = new char[str.Length];
+            bool flag = false;
+
+            Dictionary<int, string> columsdic = new Dictionary<int, string>();
+            int Dicindex = 0;
+            int index = 0;
+            //string temp;
+            for (int i=0;i<str.Length;i++)
+            {
+                if (str[i] == '{')
+                {
+                    flag = true;//여는중괄호가 나오면 닫는중괄호가 나올때까지 앞으로 나오는 , 는 그냥 집어넣는다.  
+                    continue;
+                }
+                else if (str[i] == ',')
+                {
+                    if (!flag)
+                    {
+                        temp[index] = '\0';
+                        string tt = string.Join("", temp);
+                        columsdic.Add(Dicindex++, tt.Split('\0')[0]);
+                        temp = new char[str.Length];
+                        index = 0;
+                        continue;
+                    }
+                }
+                else if (i == str.Length - 1)
+                {
+                    if(str[i]!='}')
+                        temp[index++] = str[i];
+
+                    string tt = string.Join("", temp);
+                    columsdic.Add(Dicindex++, tt.Split('\0')[0]);
+                    temp = new char[str.Length];
+                    index = 0;
+                    break;
+                }
+                else if (str[i] == '}') 
+                {
+                    flag = false;
+                    continue;
+                }
+                
+                
+                temp[index++] = str[i];
+
+            }
+
+
+            int RowNum = 0;
+
+            if (int.TryParse(columsdic[0], out RowNum))//첫번째가 숫자가 아니면 해당 행은 열제목 행이다. 리스트에 넣지 않는다.
+            {
+                data.Add(columsdic);
+            }
+            else
+            {
+                classname = columsdic[0];
+            }
 
         }
-        //string str = sr.ReadToEnd();
-
-        //var data_values = data_String.Split(',');
-        return FilePath;
-        //return null;
+        int a = 10;
+        return data;
     }
 
-
-    //private void OnGUI()
-    //{
-    //    if(GUI.Button(new Rect(100,100,100,50),"FileOpen"))
-    //    {
-    //        string fileName = FileOpen();
-
-    //        if(!string.IsNullOrEmpty(fileName))
-    //        {
-    //            Debug.Log(fileName);
-    //        }
-    //    }
-    //}
 
     // Update is called once per frame
     void Update()

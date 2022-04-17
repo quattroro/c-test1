@@ -1,0 +1,5 @@
+Amazon_Relation,SkillName,SkillRank,SkillDamage,ReauireLevel,SkillExplain,Parent,Child,Index
+0,Jab,1,30,1,재벌린과 스피어를 이용하여 재빠르게 여러 번 공격,{},{Lightning-Bolt},{2,0}
+1,Lightning-Bolt,4,180,18,재벌린을 던질때 경로를 따라 번개를 발생시킨다.,{Jab},{Lightning-Fury},{2,3}
+2,Lightning-Fury,6,200,30,엄청난 위력의 Lightning Bolt를 발사하여 명중된 적 주변으로 재차 라이트닝을 분산시켜 공격하는 기술,{Lightning-Bolt},{},{2,5}
+

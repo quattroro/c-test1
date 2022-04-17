@@ -13,6 +13,27 @@ public class SkillTreePanel : MonoBehaviour
     [SerializeField]
     List<SkillSlot> skillslots = new List<SkillSlot>();
 
+    [SerializeField]
+    public List<SkillNode> skillnodes = new List<SkillNode>();// 관계가 설정된 스킬노드들을 가지고 있을 리스트
+
+    //
+    public void SetTreeNode(SkillSlot slot, SkillNode node)
+    {
+        node.transform.parent = slot.gameObject.transform;
+        node.transform.localPosition = new Vector3(0, 0, 0);
+        slot.SetNode = node;
+        skillnodes.Add(node);
+        
+
+
+    }
+
+    public void DeleteTreeNode(SkillNode node)
+    {
+        node.DeleteNode();
+    }
+
+
     public List<SkillSlot> GetSkillSlotList
     {
         get
@@ -38,6 +59,7 @@ public class SkillTreePanel : MonoBehaviour
                 temp = GameObject.Instantiate<SkillSlot>(slotobj);
                 temp.transform.parent = slotobj.transform.parent;
                 temp.transform.position = new Vector3(slotobj.transform.position.x + (x * SkillSlotPos.x), slotobj.transform.position.y - (y * SkillSlotPos.y), 0);
+                temp.index = new Vector2Int(x, y);
                 temp.name = $"Slot({x},{y})";
                 skillslots.Add(temp);
             }
@@ -45,15 +67,5 @@ public class SkillTreePanel : MonoBehaviour
         slotobj.gameObject.SetActive(false);
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

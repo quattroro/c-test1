@@ -13,6 +13,19 @@ namespace EnumTypes
         Colummax
     }
 
+    public enum SkillTreeColums
+    {
+        SerialNum,
+        SkillName,
+        SkillRank,
+        SkillDamage,
+        ReauireLevel,
+        SkillExplain,
+        Parent,
+        Child,
+        Index,
+        TreeColumMax
+    }
 
 
 
