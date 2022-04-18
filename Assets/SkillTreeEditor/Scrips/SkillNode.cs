@@ -170,9 +170,21 @@ public class SkillNode:MonoBehaviour
             infopanel.gameObject.SetActive(true);
         Debug.Log($"{name} 팝업띄움");
 
-        infopanel.transform.position = Input.mousePosition;
-
-
+        infopanel.transform.localPosition = Input.mousePosition;
+        Vector2 size = infopanel.GetComponent<RectTransform>().rect.size;
+        Vector2 pos = infopanel.transform.localPosition;
+        if (pos.x+size.x>=Screen.width)
+        {
+            //Debug.Log("오른쪽 걸림");
+            pos.x -= size.x;
+            Debug.Log($"오른쪽 걸림 {pos.x}");
+        }
+        if(Mathf.Abs( pos.y-size.y)>=Screen.height)
+        {
+            pos.y += size.y;
+            Debug.Log($"아래쪽 걸림 {pos.y}");
+        }
+        infopanel.transform.localPosition = pos;
         infopanel.ShowPopUp(this);
     }
 
@@ -215,6 +227,7 @@ public class SkillNode:MonoBehaviour
 
     private void Start()
     {
+        if(infopanel==null)
         infopanel = GameObject.Find("InfoPanel").GetComponent<SkillInfoPanel>();
     }
 

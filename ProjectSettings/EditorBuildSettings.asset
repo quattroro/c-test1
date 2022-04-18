@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 0
+    path: Assets/MainSkillTreeSystem/Scenes/SampleScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/SkillTreeEditor/SkillTreeEditor.unity
+    guid: 52d9301b471732a4d8dc8aca56453f04
   m_configObjects: {}

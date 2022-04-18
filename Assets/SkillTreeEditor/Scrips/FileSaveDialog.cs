@@ -126,12 +126,12 @@ public class FileSaveDialog : MonoBehaviour
             output[i] = rowData[i];
             Debug.Log("row ->"+rowData[i]);
         }
-
-
-        //FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Write);
-        FilePath = UnityEngine.Application.dataPath + "/SkillInfo/" + string.Format("{0}_Relation.csv",classname);
-        StreamWriter sr = System.IO.File.CreateText(FilePath);
-        //StreamWriter sr = new StreamWriter(fs);
+        //UnityEngine.Application.persistentDataPath + $"{classname}_Relation.csv";
+        FilePath = UnityEngine.Application.persistentDataPath + $"/{classname}_Relation.csv";
+        FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
+        Debug.Log($"Save {FilePath}");
+        //StreamWriter sr = System.IO.File.CreateText(FilePath);
+        StreamWriter sr = new StreamWriter(fs,Encoding.UTF8);
         int length = output.GetLength(0);
         string delimiter = ",";
 

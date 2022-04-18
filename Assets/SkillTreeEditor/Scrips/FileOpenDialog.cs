@@ -208,6 +208,7 @@ public class FileOpenDialog : MonoBehaviour
         originalstr.Clear();
         List<Dictionary<int, string>> data = new List<Dictionary<int, string>>();
         string FilePath = filepath;
+        Debug.Log($"road {FilePath}");
         classname = null;
 
         //if (OpenDialog.ShowDialog() == DialogResult.OK)

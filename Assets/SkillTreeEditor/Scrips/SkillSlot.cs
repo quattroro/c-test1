@@ -26,7 +26,7 @@ public class SkillSlot : MonoBehaviour
                 Color color = GetComponent<Image>().color;
                 color.a = 255f;
                 GetComponent<Image>().color = color;
-                //Debug.Log($"{name}불투명");
+                Debug.Log($"{name}불투명");
             }
             else
             {

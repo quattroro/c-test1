@@ -2335,6 +2335,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nSkillSlot: {x: 4, y: 6}
   SkillSlotPos: {x: 160, y: 150}
+  lines: {fileID: 0}
   skillnodes: []
 --- !u!1 &1763722133
 GameObject:

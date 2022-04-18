@@ -70,7 +70,7 @@ public class SkillTreeSystem : MonoBehaviour
 
     public void SkillTree_Road(string classname)
     {
-        string filepath = UnityEngine.Application.dataPath + $"/Resources/CSV/{classname}_Relation.csv";
+        string filepath = UnityEngine.Application.persistentDataPath + $"/{classname}_Relation.csv";
         Debug.Log(filepath);
         List<Dictionary<int, string>> datalist = FileOpenDialog.OpenGetI.TreeFileOpen(filepath,out classname);
         //nodeobj.gameObject.SetActive(true);

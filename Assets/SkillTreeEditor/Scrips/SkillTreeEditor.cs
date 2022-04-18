@@ -282,29 +282,17 @@ public class SkillTreeEditor : MonoBehaviour
         {
             for(int y=0;y<maxY;y++)
             {
-                skillslots[y,x].p_SlotActive = false;
+                //skillslots[y,x].p_SlotActive = false;
+                skillslots[y, x].gameObject.SetActive(false);
             }
         }
 
-        //for (int y=0;y<skillslots.Count;y++)
-        //{
-        //    //skillslots[y].gameObject.SetActive(false);
-        //    skillslots[y].p_SlotActive = false;
-
-        //}
-
         for (int x = 0; x < maxX; x++)
         {
-            skillslots[val,x].p_SlotActive = true;
-            //skillslots[index + y].gameObject.SetActive(true);
+            //skillslots[val,x].p_SlotActive = true;
+            skillslots[val, x].gameObject.SetActive(true);
         }
-
-        //int index = val * nSkillSlot.x;
-        //for(int y=0;y<nSkillSlot.x;y++)
-        //{
-        //    skillslots[index + y].p_SlotActive = true;
-        //    //skillslots[index + y].gameObject.SetActive(true);
-        //}
+        Debug.Log($"¼û±æ ÀÎµ¦½º{val}");
     }
 
     public void MouseDown(Vector2 pos)
@@ -427,7 +415,8 @@ public class SkillTreeEditor : MonoBehaviour
             {
                 for (int y = 0; y < skillslots.GetLength(0); y++)
                 {
-                    skillslots[y, x].p_SlotActive = true;
+                    //skillslots[y, x].p_SlotActive = true;
+                    skillslots[y, x].gameObject.SetActive(true);
                 }
             }
 
