@@ -8,6 +8,7 @@ public class RelationLine : UILineRenderer
     public SkillNode DownNode;
 
     public List<SkillNode> tempnode = new List<SkillNode>();
+    private List<Vector3> temppos = new List<Vector3>();
 
     public bool SetNode(SkillNode node)
     {
@@ -22,6 +23,29 @@ public class RelationLine : UILineRenderer
             }
         }
         else if(tempnode.Count ==1)
+        {
+            SetPosition(0, tempnode[0].transform.position);
+        }
+        return false;
+        //tempnode.Clear();
+    }
+
+    public bool SetNode(SkillNode node, Vector3 pos)
+    {
+        temppos.Add(pos);
+        tempnode.Add(node);
+        if (tempnode.Count >= 2)
+        {
+            //상위에서 하위로의 관계만 허용한다.
+            if (tempnode[0].SkillRank < tempnode[1].SkillRank)
+            {
+                SetRelation(tempnode[0], tempnode[1]);
+                SetPosition(0, temppos[0]);
+                SetPosition(1, temppos[1]);
+                return true;
+            }
+        }
+        else if (tempnode.Count == 1)
         {
             SetPosition(0, tempnode[0].transform.position);
         }
@@ -54,12 +78,16 @@ public class RelationLine : UILineRenderer
         DownNode.relations.Add(this);
     }
 
+    
+
+
+
     public void DeleteRelation()
     {
-        UpNode.DeleteRalation(DownNode);
-        UpNode.relations.Remove(this);
-        DownNode.DeleteRalation(UpNode);
-        DownNode.relations.Remove(this);
+        UpNode.DeleteRalation(DownNode,this);
+        //UpNode.relations.Remove(this);
+        DownNode.DeleteRalation(UpNode, this);
+        //DownNode.relations.Remove(this);
         GameObject.Destroy(this.gameObject);
     }
 

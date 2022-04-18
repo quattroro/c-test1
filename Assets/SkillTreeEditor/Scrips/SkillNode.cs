@@ -18,6 +18,31 @@ public class SkillNode:MonoBehaviour
         SETTING,//슬롯에 배치된 상태
         CONNECTED,//연결관계설정까지 완료된 상태
     }
+
+    [SerializeField]
+    bool _isactive = true;
+
+    public bool P_NodeActive
+    {
+        get
+        {
+            return _isactive;
+        }
+        set
+        {
+            _isactive = value;
+            if(value)
+            {
+                GetComponent<Image>().sprite = IconTextures[0];
+            }
+            else
+            {
+                GetComponent<Image>().sprite = IconTextures[1];
+            }
+        }
+    }
+        
+
     [SerializeField]
     private NodeState _state = NodeState.NOMAL;
 
@@ -42,7 +67,7 @@ public class SkillNode:MonoBehaviour
     public string SkillExplain;
     public int IconID;
     public Sprite IconTexture;
-
+    public Sprite[] IconTextures;
     [Header("연결정보")]
     public List<SkillNode> parentNode;
     public List<SkillNode> childNode;
@@ -80,7 +105,9 @@ public class SkillNode:MonoBehaviour
         RequireLevel = rLevel;
         SkillExplain = Explain;
         SkillRank = rank;
-        IconTexture = Resources.Load<Sprite>($"SkillIcons/{ClassName}/{SkillName}");
+        //IconTexture = Resources.Load<Sprite>($"SkillIcons/{ClassName}/{SkillName}");
+        IconTextures = Resources.LoadAll<Sprite>($"SkillIcons/{ClassName}/{SkillName}");
+        IconTexture = IconTextures[0];
         GetComponent<Image>().sprite = IconTexture;
 
     }
@@ -103,7 +130,7 @@ public class SkillNode:MonoBehaviour
         }
     }
 
-    public void DeleteRalation(SkillNode node)
+    public void DeleteRalation(SkillNode node, RelationLine line)
     {
         if (node.SkillRank < this.SkillRank)//node -> parent
         {
@@ -113,7 +140,11 @@ public class SkillNode:MonoBehaviour
         {
             childNode.Remove(node);
         }
-
+        relations.Remove(line);
+        if(relations.Count<=0)
+        {
+            State = NodeState.SETTING;
+        }
     }
     
     IEnumerator IShowPopUpCount()
@@ -184,6 +215,7 @@ public class SkillNode:MonoBehaviour
 
     private void Start()
     {
+        infopanel = GameObject.Find("InfoPanel").GetComponent<SkillInfoPanel>();
     }
 
     private void Update()

@@ -34,7 +34,8 @@ public class SkillTreeEditor : MonoBehaviour
     [SerializeField]
     List<SkillNode> skillnodes = new List<SkillNode>();
     [SerializeField]
-    List<SkillSlot> skillslots = null;
+    //List<SkillSlot> skillslots = null;
+    SkillSlot[,] skillslots = null;
     [SerializeField]
     List<RelationLine> relationlines = new List<RelationLine>();
     [SerializeField]
@@ -189,6 +190,78 @@ public class SkillTreeEditor : MonoBehaviour
     public void On_Click_SkillTree_Road()
     {
         List<Dictionary<int, string>> datalist = FileOpenDialog.OpenGetI.TreeFileOpen(out classname);
+        SkillNodeObject.gameObject.SetActive(true);
+
+        int damage = 0;
+        int level = 0;
+        int rank = 0;
+        //string classname = null;
+        string skillname = null;
+        string explain = null;
+        List<SkillNode> parentlist;
+        List<SkillNode> childlist;
+
+        List<SkillNode> tempnodelist = new List<SkillNode>();
+
+        for (int i = 0; i < datalist.Count; i++)
+        {
+            string[] indexstr = datalist[i][(int)EnumTypes.SkillTreeColums.Index].Split(',');
+            int indexX = -1;
+            int indexY = -1;
+            int.TryParse(indexstr[0], out indexX);
+            int.TryParse(indexstr[1], out indexY);
+            int.TryParse(datalist[i][(int)EnumTypes.SkillTreeColums.SkillDamage], out damage);
+            int.TryParse(datalist[i][(int)EnumTypes.SkillTreeColums.ReauireLevel], out level);
+            int.TryParse(datalist[i][(int)EnumTypes.SkillTreeColums.SkillRank], out rank);
+            skillname = datalist[i][(int)EnumTypes.SkillTreeColums.SkillName];
+            explain = datalist[i][(int)EnumTypes.SkillTreeColums.SkillExplain];
+
+
+            SkillNode copyobj = GameObject.Instantiate<SkillNode>(SkillNodeObject);
+            copyobj.name = skillname;
+            //copyobj.transform.parent = SkillNodeObject.transform.parent;
+            copyobj.Init(classname, skillname, rank, damage, level, explain);
+
+            tempnodelist.Add(copyobj);
+
+            treepanel.SetTreeNode(new Vector2Int(indexX, indexY), copyobj);//만들어준 슼킬 노드를 바로 슬롯에 장착시켜준다.
+
+        }
+
+
+        //노드들을 다 만들어 준 다음에 연결정보를 읽어와서 노드들을 연결해준다.
+        for (int i = 0; i < datalist.Count; i++)
+        {
+            ParseRelation(tempnodelist, tempnodelist[i], datalist[i][(int)EnumTypes.SkillTreeColums.Child]);
+        }
+
+
+        SkillNodeObject.gameObject.SetActive(false);
+    }
+
+    //현재 노드와 child열결정보만 가지고 관계를 설정해준다.
+    public void ParseRelation(List<SkillNode> list/*전체 노드들의 리스트*/,SkillNode node, string relation/*현재 노드의 연결정보*/)
+    {
+        
+        List<SkillNode> ret = new List<SkillNode>();
+        string[] namelist = relation.Split(',');
+
+        for (int i=0;i<namelist.Length;i++)
+        {
+            for (int j = 0; j < list.Count;j++)
+            {
+                if(list[j].SkillName == namelist[i])
+                {
+                    templine = GameObject.Instantiate<RelationLine>(lineobj);
+                    templine.transform.parent = this.transform;
+                    templine.SetNode(node,node.transform.position);
+                    templine.SetNode(list[j],list[j].transform.position);
+                    templine = null;
+                    //ret.Add(list[j]);
+                    break;
+                }
+            }
+        }
     }
 
     public void On_Click_SkillTree_Save()
@@ -199,19 +272,39 @@ public class SkillTreeEditor : MonoBehaviour
 
     public void HideSlot(int val)
     {
-        for(int y=0;y<skillslots.Count;y++)
-        {
-            //skillslots[y].gameObject.SetActive(false);
-            skillslots[y].p_SlotActive = false;
+        if (skillslots == null)
+            skillslots = treepanel.GetSkillSlotList;
+        //int num = skillslots.GetLength(0) * skillslots.GetLength(1);
+        int maxY = skillslots.GetLength(0);
+        int maxX = skillslots.GetLength(1);
 
+        for(int x=0;x<maxX;x++)
+        {
+            for(int y=0;y<maxY;y++)
+            {
+                skillslots[y,x].p_SlotActive = false;
+            }
         }
 
-        int index = val * nSkillSlot.x;
-        for(int y=0;y<nSkillSlot.x;y++)
+        //for (int y=0;y<skillslots.Count;y++)
+        //{
+        //    //skillslots[y].gameObject.SetActive(false);
+        //    skillslots[y].p_SlotActive = false;
+
+        //}
+
+        for (int x = 0; x < maxX; x++)
         {
-            skillslots[index + y].p_SlotActive = true;
+            skillslots[val,x].p_SlotActive = true;
             //skillslots[index + y].gameObject.SetActive(true);
         }
+
+        //int index = val * nSkillSlot.x;
+        //for(int y=0;y<nSkillSlot.x;y++)
+        //{
+        //    skillslots[index + y].p_SlotActive = true;
+        //    //skillslots[index + y].gameObject.SetActive(true);
+        //}
     }
 
     public void MouseDown(Vector2 pos)
@@ -311,7 +404,6 @@ public class SkillTreeEditor : MonoBehaviour
                                 //a.gameObject.GetComponent<SkillSlot>().SetNode = Click_Copy_Obj.GetComponent<SkillNode>();
 
                                 treepanel.SetTreeNode(a.gameObject.GetComponent<SkillSlot>(), Click_Copy_Obj.GetComponent<SkillNode>());
-
                                 Click_Copy_Obj.GetComponent<SkillNode>().State = SkillNode.NodeState.SETTING;
                                 Click_Copy_Obj.GetComponent<SkillNode>().IsClicked = false;
                                 flag = true;
@@ -327,10 +419,22 @@ public class SkillTreeEditor : MonoBehaviour
                 GameObject.Destroy(Click_Copy_Obj);
 
             Click_Copy_Obj = null;
-            for (int y = 0; y < skillslots.Count; y++)
+
+            if(skillslots ==null)
+                skillslots = treepanel.GetSkillSlotList;
+
+            for (int x = 0; x < skillslots.GetLength(1); x++)
             {
-                skillslots[y].p_SlotActive = true;
+                for (int y = 0; y < skillslots.GetLength(0); y++)
+                {
+                    skillslots[y, x].p_SlotActive = true;
+                }
             }
+
+            //for (int y = 0; y < skillslots.Count; y++)
+            //{
+            //    skillslots[y].p_SlotActive = true;
+            //}
         }
         else if (NowMode == EDITMODE.CREATELINE)
         {

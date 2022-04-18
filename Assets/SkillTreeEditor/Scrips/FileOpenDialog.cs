@@ -194,7 +194,7 @@ public class FileOpenDialog : MonoBehaviour
             }
             else
             {
-                classname = columsdic[0];
+                classname = columsdic[0].Split('_')[0];
             }
 
         }
@@ -202,7 +202,106 @@ public class FileOpenDialog : MonoBehaviour
         return data;
     }
 
+    //스킬정보와 스킬트리정보를 받아온다.
+    public List<Dictionary<int, string>> TreeFileOpen(string filepath, out string classname)
+    {
+        originalstr.Clear();
+        List<Dictionary<int, string>> data = new List<Dictionary<int, string>>();
+        string FilePath = filepath;
+        classname = null;
 
+        //if (OpenDialog.ShowDialog() == DialogResult.OK)
+        //{
+        //    if ((openStream = OpenDialog.OpenFile()) != null)
+        //    {
+        //        //return OpenDialog.FileName;
+        //        FilePath = OpenDialog.FileName;
+        //    }
+        //}
+        if (FilePath == null)
+        {
+            Debug.Log("여기서 나감1");
+            return null;
+        }
+
+
+        FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
+
+        StreamReader sr = new StreamReader(fs);
+
+        while (true)
+        {
+            string str = sr.ReadLine();
+            originalstr.Add(str);
+            if (str == null || str.Length == 0)
+            {
+                break;
+            }
+            char[] temp = new char[str.Length];
+            bool flag = false;
+
+            Dictionary<int, string> columsdic = new Dictionary<int, string>();
+            int Dicindex = 0;
+            int index = 0;
+            //string temp;
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] == '{')
+                {
+                    flag = true;//여는중괄호가 나오면 닫는중괄호가 나올때까지 앞으로 나오는 , 는 그냥 집어넣는다.  
+                    continue;
+                }
+                else if (str[i] == ',')
+                {
+                    if (!flag)
+                    {
+                        temp[index] = '\0';
+                        string tt = string.Join("", temp);
+                        columsdic.Add(Dicindex++, tt.Split('\0')[0]);
+                        temp = new char[str.Length];
+                        index = 0;
+                        continue;
+                    }
+                }
+                else if (i == str.Length - 1)
+                {
+                    if (str[i] != '}')
+                        temp[index++] = str[i];
+
+                    string tt = string.Join("", temp);
+                    columsdic.Add(Dicindex++, tt.Split('\0')[0]);
+                    temp = new char[str.Length];
+                    index = 0;
+                    break;
+                }
+                else if (str[i] == '}')
+                {
+                    flag = false;
+                    continue;
+                }
+
+
+                temp[index++] = str[i];
+
+            }
+
+
+            int RowNum = 0;
+
+            if (int.TryParse(columsdic[0], out RowNum))//첫번째가 숫자가 아니면 해당 행은 열제목 행이다. 리스트에 넣지 않는다.
+            {
+                data.Add(columsdic);
+            }
+            else
+            {
+                classname = columsdic[0].Split('_')[0];
+            }
+
+        }
+        int a = 10;
+        Debug.Log("여기서 나감2");
+        return data;
+    }
     // Update is called once per frame
     void Update()
     {
